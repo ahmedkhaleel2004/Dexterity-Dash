@@ -1,80 +1,116 @@
 import pygame
 import random
+import sys
 
-# Initialize Pygame
+# Define colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+
+# Set the width and height of the screen [width, height]
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+# Set up the game
 pygame.init()
-score =0
-# Set up the screen
-screen_width = 800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Dot Tracking Game")
 
-# Set up the colors
-white = (255, 255, 255)
-black = (0, 0, 0)
-red = (255, 0, 0)
+# Set the screen
+screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
-# Set up the dot
-dot_size = 20
-dot_x = screen_width / 2 - dot_size / 2
-dot_y = screen_height / 2 - dot_size / 2
-dot_speed = 5
-dot_color = white
-
-# Set up the target
-target_size = 40
-target_x = random.randint(0, screen_width - target_size)
-target_y = random.randint(0, screen_height - target_size)
-target_speed = 2
-target_color = red
+# Set the caption of the window
+pygame.display.set_caption("Gardening Tracking Game")
 
 # Set up the clock
 clock = pygame.time.Clock()
 
+# Set up the font
+font = pygame.font.Font(None, 36)
+
+# Define the class for the target
+class Target(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface([30, 30])
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        self.rect.x += random.randint(-5, 5)
+        self.rect.y += random.randint(-5, 5)
+
+        # Keep the target on the screen
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+
+        if self.rect.top < 0:
+            self.rect.top = 0
+        elif self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
+
+# Create the target sprite
+target_sprite = pygame.sprite.Group()
+target = Target()
+target_sprite.add(target)
+
+# Set the initial score
+score = 0
+
 # Set up the game loop
-running = True
-while running:
-    # Handle events
+done = False
+while not done:
+    # --- Event Processing ---
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            done = True
 
-    # Handle user input
+    # --- Game logic ---
+    # Get the state of the arrow keys
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        dot_y -= dot_speed
-    if keys[pygame.K_s]:
-        dot_y += dot_speed
-    if keys[pygame.K_a]:
-        dot_x -= dot_speed
-    if keys[pygame.K_d]:
-        dot_x += dot_speed
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_ESCAPE:
+            pygame.quit()
+            sys.exit()
+    # Move the target based on the arrow keys
+    if keys[pygame.K_LEFT]:
+        target.rect.x -= 5
+    if keys[pygame.K_RIGHT]:
+        target.rect.x += 5
+    if keys[pygame.K_UP]:
+        target.rect.y -= 5
+    if keys[pygame.K_DOWN]:
+        target.rect.y += 5
 
-    # Update the dot
-    dot_rect = pygame.Rect(dot_x, dot_y, dot_size, dot_size)
+    # Check for collisions between the target and the mouse cursor
+    mouse_pos = pygame.mouse.get_pos()
+    if target.rect.collidepoint(mouse_pos):
+        # Move the target to a new random location
+        target.rect.x = random.randint(0, SCREEN_WIDTH - target.rect.width)
+        target.rect.y = random.randint(0, SCREEN_HEIGHT - target.rect.height)
 
-    # Update the target
-    target_x += random.randint(-target_speed, target_speed)
-    target_y += random.randint(-target_speed, target_speed)
-    target_rect = pygame.Rect(target_x, target_y, target_size, target_size)
+        # Increase the score
+        score += 1
 
-    # Draw the dot and the target
-    screen.fill(black)
-    pygame.draw.rect(screen, dot_color, dot_rect)
-    pygame.draw.rect(screen, target_color, target_rect)
+    # Update the target sprite
+    target_sprite.update()
 
-    # Check for collision between the dot and the target
-    if dot_rect.colliderect(target_rect):
-        target_x = random.randint(0, screen_width - target_size)
-        target_y = random.randint(0, screen_height - target_size)
-        score +=1
+    # --- Draw the screen ---
+    # Fill the background
+    screen.fill(WHITE)
+
+    # Draw the target sprite
+    target_sprite.draw(screen)
+
+    # Draw the score
+    score_text = font.render("Score: {}".format(score), True, BLACK)
+    screen.blit(score_text, [10, 10])
+
     # Update the screen
-    pygame.display.update()
+    pygame.display.flip()
 
-    # Set the frame rate
+    # --- Limit to 60 frames per second ---
     clock.tick(60)
 
-# Quit Pygame
+# Close the window and quit.
 pygame.quit()
-print("Your final score was",score)
