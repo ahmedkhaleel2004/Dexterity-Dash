@@ -1,30 +1,14 @@
 import pygame
 import random
 
-
-from sensor_library import *
+from joystick_library import Joystick
 import time
 
-joystick1 = Force_Sensing_Resistor(0)
-joystick2 = Force_Sensing_Resistor(1)
-UD = []
-LR = []
-SIZE = 10 # Window of rolling average
-
-# Baseline is the idling value maually found for X and Y respectively
-BASELINE_X = 132
-BASELINE_Y = 124
-
-def rolling_average(size, data):
-    data = data[len(data)-size:len(data)]
-    average = sum(data)/size
-    return average
-
-def scale(value, baseline):
-    scaled_value = ((value-baseline)/baseline)*2
-    return scaled_value
-
-
+# Syntax: Joystick(ADC_address,pin_x,pin_y)
+# joystick.read_y() / read_x() -> rolling avg and scaled value
+# If it works it works...
+joystick1 = Joystick(48,0,2)
+joystick2 = Joystick(48,3,1)
 
 # Initialize Pygame
 pygame.init()
@@ -91,35 +75,21 @@ while title_active:
 score = 0
 game_active = True
 while game_active:
-
-    # Append raw data
-    UD.append(joystick1.force_raw())
-    LR.append(joystick2.force_raw())
-
-    # Clear lists
-    if len(UD) > SIZE*2:
-        UD.pop(0)
-    if len(LR) > SIZE*2:
-        LR.pop(0)
-
-    # Calculate movement
-    average_x = rolling_average(SIZE,LR)
-    scaled_x = scale(average_x,BASELINE_X)
-    average_y = rolling_average(SIZE,UD)
-    scaled_y = scale(average_y, BASELINE_Y)
     
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_active = False
 
+    print(f"Joystick 1 Y: {joystick1.read_y()} X: {joystick1.read_x()}\tJoystick 2 Y: {joystick2.read_y()} X: {joystick2.read_x()}")
+    # Temporary testing here
     # Move dot
-    dot_vel_y += (scaled_y*-1)*4
-    dot_vel_x += (scaled_x)*4
+    dot_vel_y += joystick1.read_y()*-150
+    dot_vel_x += joystick1.read_x()*150
 
     # Add friction
-    dot_vel_x *= 0.7
-    dot_vel_y *= 0.7
+    dot_vel_x *= 0.1
+    dot_vel_y *= 0.1
 
     # Update the crosshair position
     dot_x += dot_vel_x
