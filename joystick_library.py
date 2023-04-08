@@ -66,10 +66,10 @@ class joystick0x49(object):
         self.scaled = self.force_raw() * scale / 255
         return self.scaled
 
-class joystick0x51(object):
+class joystick0x4B(object):
 
     def __init__(self,pin=0,i2c_ch=1):
-        self.address = 0x51
+        self.address = 0x4B
         self.A0 = 0x40
         self.A1 = 0x41
         self.A2 = 0x42
@@ -113,17 +113,17 @@ class Joystick:
     def __init__(self, address, pin_x, pin_y):
         self.UD = []
         self.LR = []
-        self.SIZE = 10
-        if address == 48:
+        self.SIZE = 8
+        if address == "48":
             # I have NO IDEA why the pins are reversed but it works
             self.x = joystick0x48(pin_y)
             self.y = joystick0x48(pin_x)
-        elif address == 49:
+        elif address == "49":
             self.x = joystick0x49(pin_y)
             self.y = joystick0x49(pin_x)
-        elif address == 51:
-            self.x = joystick0x51(pin_y)
-            self.y = joystick0x51(pin_x)
+        elif address == "4B":
+            self.x = joystick0x4B(pin_y)
+            self.y = joystick0x4B(pin_x)
         else:
             print("Invalid address")
         print("Initiating...")
