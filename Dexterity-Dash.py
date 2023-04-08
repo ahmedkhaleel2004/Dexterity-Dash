@@ -4,11 +4,14 @@ import random
 from joystick_library import Joystick
 import time
 
-# Syntax: Joystick(ADC_address,pin_x,pin_y)
+# Syntax: Joystick(ADC_address: str, pin_x: int, pin_y: int)
 # joystick.read_y() / read_x() -> rolling avg and scaled value
 # If it works it works...
-joystick1 = Joystick(48,0,2)
-joystick2 = Joystick(48,3,1)
+joystick1 = Joystick("48",0,1)
+joystick2 = Joystick("48",3,2)
+joystick3 = Joystick("49",1,0)
+#joystick4
+joystick5 = Joystick("4B",1,0)
 
 # Initialize Pygame
 pygame.init()
@@ -81,11 +84,13 @@ while game_active:
         if event.type == pygame.QUIT:
             game_active = False
 
-    print(f"Joystick 1 Y: {joystick1.read_y()} X: {joystick1.read_x()}\tJoystick 2 Y: {joystick2.read_y()} X: {joystick2.read_x()}")
-    # Temporary testing here
-    # Move dot
-    dot_vel_y += joystick1.read_y()*-150
-    dot_vel_x += joystick1.read_x()*150
+    # Bro there is something seriously wrong with the way sensor_library was coded but this works with some x's and y's switched
+    y_inputs = joystick1.read_x(), joystick2.read_y(), joystick3.read_y(), joystick5.read_y()
+    x_inputs = joystick1.read_y(), joystick2.read_x(), joystick3.read_x(), joystick5.read_x()
+    
+    # Move dot (0.12 is there for correction)
+    dot_vel_y += (sum(y_inputs)+0.12)*-100
+    dot_vel_x += (sum(x_inputs)-0.12)*100
 
     # Add friction
     dot_vel_x *= 0.1
