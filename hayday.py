@@ -1,5 +1,5 @@
 # Houses bigger, fixed locations, titles for stations, exit house
-# tracking: time spent off target, use different joysticks, switch fruits
+# tracking: time limit, use different joysticks, switch fruits
 # original collecting game: collecting in certain time
 # pattern game: arrows move down, check collision and joystick pos, 3 fingers, increase speed after certain score
 
@@ -8,6 +8,8 @@ import sys
 import os
 import subprocess
 import random
+
+# MOVE THIS DOWN INTO GAME LOOP AFTER COLLISION
 
 f = open("highscores.txt", "r")
 highscores = []
