@@ -1,3 +1,8 @@
+# Houses bigger, fixed locations, titles for stations, exit house
+# tracking: time spent off target, use different joysticks, switch fruits
+# original collecting game: collecting in certain time
+# pattern game: arrows move down, check collision and joystick pos, 3 fingers, increase speed after certain score
+
 import pygame
 import sys
 import os
