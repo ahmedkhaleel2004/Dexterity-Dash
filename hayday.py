@@ -4,6 +4,13 @@ import os
 import subprocess
 import random
 
+f = open("highscores.txt", "r")
+highscores = []
+
+for line in f:
+    line = line.split()
+    highscores.append(int(line[-1]))
+
 # Initialize Pygame
 pygame.init()
 
@@ -114,6 +121,16 @@ pygame.display.flip()
 box_vel_x = 0
 box_vel_y = 0
 
+# Create a font object
+header_font = pygame.font.Font("font.otf", 48)
+text_font = pygame.font.Font("font.otf", 36)
+
+# Render the text onto a surface
+text_header = header_font.render(f"Highscores:", True, blue)
+text_st1 = text_font.render(f"Station 1: {highscores[0]}", True, blue)
+text_st2 = text_font.render(f"Station 2: {highscores[1]}", True, blue)
+text_st3 = text_font.render(f"Station 3: {highscores[2]}", True, blue)
+
 while True:
     # Handle events
     for event in pygame.event.get():
@@ -187,6 +204,10 @@ while True:
         screen.blit(inverted_box_img, (box_x, box_y))
     else:
         screen.blit(box_img, (box_x, box_y))
+    screen.blit(text_header, (WINDOW_WIDTH-text_header.get_width(), 0))
+    screen.blit(text_st1, (WINDOW_WIDTH-text_st1.get_width(), text_header.get_height()))
+    screen.blit(text_st2, (WINDOW_WIDTH-text_st2.get_width(), text_st1.get_height()+text_header.get_height()))
+    screen.blit(text_st3, (WINDOW_WIDTH-text_st3.get_width(), text_st2.get_height()+text_st1.get_height()+text_header.get_height()))
     
     # Update display and tick clock
     pygame.display.update()
