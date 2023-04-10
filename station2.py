@@ -1,14 +1,13 @@
-
 import pygame
 import random
 import time
 from joystick_library import *
 
-joystick1 = Joystick("48",0,1)
-joystick2 = Joystick("48",3,2)
-joystick3 = Joystick("49",1,0)
-joystick4 = Joystick("49",2,3)
-joystick5 = Joystick("4B",1,0)
+joystick1 = Joystick("4B",1,0)
+joystick2 = Joystick("4B",2,3)
+joystick3 = Joystick("48",3,2)
+joystick4 = Joystick("49",1,0)
+joystick5 = Joystick("49",2,3)
 pygame.init()
 
 # Define the screen dimensions
@@ -34,33 +33,29 @@ clock = pygame.time.Clock()
 
 # Define the game variables
 score = 0
-time_left = 800
+time_left = 80000000
 background_image = pygame.image.load("background.png").convert()
 
-fruits = ["apple", "tree", "rose"]
+
+fruits = ["apple", "tree"]
 fruit_images = {
     "apple": pygame.image.load("apple.png"),
-    "tree": pygame.image.load("tree.png"),
-    "rose": pygame.image.load("rose.png")
+    "tree": pygame.image.load("tree.png")
 }
 fruit_rects = {
     "apple": fruit_images["apple"].get_rect(),
-    "tree": fruit_images["tree"].get_rect(),
-    "rose": fruit_images["rose"].get_rect()
+    "tree": fruit_images["tree"].get_rect()
 }
 fruit_positions = {
     "apple": [SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2],
-    "tree": [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2],
-    "rose": [SCREEN_WIDTH // 4 * 3, SCREEN_HEIGHT // 2]
+    "tree": [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]
 }
 speed=1.5
 fruit_velocities = {
     "apple": [random.uniform(-speed, speed), random.uniform(-speed, speed)],
-    "tree": [random.uniform(-speed, speed), random.uniform(-speed, speed)],
-    "rose": [random.uniform(-speed, speed), random.uniform(-speed, speed)]
+    "tree": [random.uniform(-speed, speed), random.uniform(-speed, speed)]
 }
 
-# Define the functions
 def draw_text(text, color, x, y):
     surface = FONT.render(text, True, color)
     rect = surface.get_rect()
@@ -76,6 +71,7 @@ def update_fruit_positions():
         fruit_positions[fruit][0] += fruit_velocities[fruit][0]
         fruit_positions[fruit][1] += fruit_velocities[fruit][1]
 
+
         # Bounce off the edges of the screen
         if fruit_positions[fruit][0] < 0 or fruit_positions[fruit][0] > SCREEN_WIDTH:
             fruit_velocities[fruit][0] *= -1
@@ -88,22 +84,18 @@ def update_fruit_positions():
 def random_fruit():
     return random.choice(fruits)
 
-# Create the black square
-shovel_rect = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 20, 20)
-high_score=0
-# Open the high score file in read-only mode
+# Set up the dot
+dot_size = 20
+dot_x = SCREEN_WIDTH // 2 - dot_size // 2
+dot_y = SCREEN_HEIGHT // 2 - dot_size // 2
+dot_speed = 2
+dot_color = WHITE
+dot_vel_x = 0
+dot_vel_y = 0
+a=3
+joysticks = [joystick1,joystick2,joystick3,joystick4,joystick5]
+score = 0
 
-with open('highscores.txt', 'r') as file:
-    # Read the high score value from the file
-    high_score = int(file.read())
-
-print("No current high score")
-
-
-# Print the high score value
-print("The current high score is:", high_score)
-
-# Start the game loop
 running = True
 while running:
     # Handle events
@@ -116,7 +108,6 @@ while running:
 
     #Draw the background
     screen.blit(background_image, [0, 0])
-
 
     # Draw the fruits
     for fruit in fruits:
@@ -131,44 +122,108 @@ while running:
     #update fruit positions
     update_fruit_positions()
 
-    # Move the black square with arrow keys
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        shovel_rect.move_ip(-joystick1.read_x(), 0)
-    if keys[pygame.K_RIGHT]:
-        shovel_rect.move_ip(joystick1.read_x(), 0)
-    if keys[pygame.K_UP]:
-        shovel_rect.move_ip(0, -joystick1.read_y())
-    if keys[pygame.K_DOWN]:
-        shovel_rect.move_ip(0, joystick1.read_y())
+    
+    if a ==1 or a==3 or a==4:
+        y_inputs = joysticks[a-1].read_x()
+        x_inputs = joysticks[a-1].read_y()
 
-    # Check for collisions with the black square
+        dot_vel_y += x_inputs*-25
+        dot_vel_x += y_inputs*25
+    elif a ==5:
+        y_inputs = joysticks[a-1].read_x()
+        x_inputs = joysticks[a-1].read_y()
+
+        dot_vel_y += y_inputs*25
+        dot_vel_x += x_inputs*-25
+    else:
+        a = 1
+
+    # Add friction
+    dot_vel_x *= 0.1
+    dot_vel_y *= 0.1
+
+    # Update the crosshair position
+    dot_x += dot_vel_x
+    dot_y += dot_vel_y
+
+   # Set boundaries for the dot
+    #if dot_x <= 0:
+        #dot_x = 0
+    #if dot_x >= SCREEN_WIDTH - dot_size:
+      #  dot_x = SCREEN_WIDTH - dot_size
+    #if dot_y <= 0:
+     #   dot_y = 0
+    #if dot_y >= SCREEN_HEIGHT - dot_size:
+     #   dot_y = SCREEN_HEIGHT - dot_size
+
+    # Check for collisions with fruits
     for fruit in fruits:
-        if fruit_rects[fruit].colliderect(shovel_rect):
+        if fruit_rects[fruit].colliderect(pygame.Rect(dot_x, dot_y, dot_size, dot_size)):
+            # Increase the score
             score += 1
-            fruits.remove(fruit)
-            fruits.append(random_fruit())
-    # Check if time is up
+
+            # Reset the fruit position and velocity
+            fruit_positions[fruit] = [random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)]
+            fruit_velocities[fruit] = [random.uniform(-speed, speed), random.uniform(-speed, speed)]
+
+            # Set the dot position and velocity
+            dot_x = SCREEN_WIDTH // 2 - dot_size // 2
+            dot_y = SCREEN_HEIGHT // 2 - dot_size // 2
+            dot_vel_x = 0
+            dot_vel_y = 0
+
+    # Decrease the time left
+    time_left -= 10
+
+    # End the game if time runs out
     if time_left <= 0:
         running = False
 
-    # Draw the black square
-    pygame.draw.rect(screen, BLACK, shovel_rect)
+    # Draw the dot
+    pygame.draw.rect(screen, dot_color, (dot_x, dot_y, dot_size, dot_size))
 
     # Update the screen
-    pygame.display.update()
+    pygame.display.flip()
 
-    # Decrement the time
+    # Set the frameif dot_x <= 0:
+    #dot_x = 0
+    #if dot_x >= SCREEN_WIDTH - dot_size:
+      #  dot_x = SCREEN_WIDTH - dot_size
+    #if dot_y <= 0:
+      #  dot_y = 0
+    #if dot_y >= SCREEN_HEIGHT - dot_size:
+      #  dot_y = SCREEN_HEIGHT - dot_size
 
-    time_left -= 1
+    # Check for collisions with fruits
+    for fruit in fruits:
+        if fruit_rects[fruit].colliderect(pygame.Rect(dot_x, dot_y, dot_size, dot_size)):
+            # Increase the score
+            score += 1
 
-    # Tick the clock
+            # Reset the fruit position and velocity
+            fruit_positions[fruit] = [random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)]
+            fruit_velocities[fruit] = [random.uniform(-speed, speed), random.uniform(-speed, speed)]
+
+            # Set the dot position and velocity
+            dot_x = SCREEN_WIDTH // 2 - dot_size // 2
+            dot_y = SCREEN_HEIGHT // 2 - dot_size // 2
+            dot_vel_x = 0
+            dot_vel_y = 0
     clock.tick(60)
+
+    # switch between joysticks
+    #a+=1
+    #if a > 5:
+     #   a = 1
+
+
 
 # Game over
 screen.fill(WHITE)  
 draw_text("Game Over", BLACK, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
 draw_text(f"Final Score: {score}", BLACK, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+
+high_score = 0
 
 if score > high_score:
     with open('highscores.txt', 'w') as file:
