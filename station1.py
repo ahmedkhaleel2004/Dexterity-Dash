@@ -198,7 +198,7 @@ while running:
     # check if selected circle joystick is in the right direction
     num = selected_circle[0]
 
-    for i in range(15):
+    for i in range(20):
         check()
         time.sleep(0.001)
 
@@ -207,8 +207,6 @@ while running:
 
     # --- Limit to 60 frames per second ---
     clock.tick(60)
-
-print("your score was", score)
 
 # Close the window and quit.
 pygame.quit()
