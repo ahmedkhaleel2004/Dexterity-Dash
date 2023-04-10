@@ -52,7 +52,6 @@ background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
 screen.blit(background, (0, 0))
 
-a = 3
 joysticks = [joystick1, joystick2, joystick3, joystick4, joystick5]
 
 start_text = font.render("Game Starting in...", True, BLUE)
@@ -165,6 +164,23 @@ def drop_directions():
         # --- Limit to 60 frames per second ---
         clock.tick(60)
 
+def check():
+    global score
+    for i in range(5):
+        if i == num:
+            if selected_direction == ["arrowup.png"]:
+                if joysticks[i].read_y() > 0.1:
+                    score += 1
+            elif selected_direction == ["arrowdown.png"]:
+                if joysticks[i].read_y() < -0.1:
+                    score += 1
+            elif selected_direction == ["arrowleft.png"]:
+                if joysticks[i].read_x() < -0.1:
+                    score += 1
+            elif selected_direction == ["arrowright.png"]:
+                if joysticks[i].read_x() > 0.1:
+                    score += 1
+
 draw_circles()
 
 score = 0
@@ -182,20 +198,9 @@ while running:
     # check if selected circle joystick is in the right direction
     num = selected_circle[0]
 
-    for i in range(5):
-        if i == num:
-            if selected_direction == ["arrowup.png"]:
-                if joysticks[i].read_y() > 0.5:
-                    score += 1
-            elif selected_direction == ["arrowdown.png"]:
-                if joysticks[i].read_y() < -0.5:
-                    score += 1
-            elif selected_direction == ["arrowleft.png"]:
-                if joysticks[i].read_x() < -0.5:
-                    score += 1
-            elif selected_direction == ["arrowright.png"]:
-                if joysticks[i].read_x() > 0.5:
-                    score += 1
+    for i in range(15):
+        check()
+        time.sleep(0.001)
 
     # Update the screen
     pygame.display.flip()
