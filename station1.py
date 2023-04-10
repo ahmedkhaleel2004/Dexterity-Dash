@@ -74,6 +74,8 @@ pygame.display.flip()
 time.sleep(1)
 screen.blit(background, (0, 0))
 
+score = 0
+
 def draw_circles():
     # Define the radius of the circles
     CIRCLE_RADIUS = 50
@@ -95,6 +97,7 @@ def draw_circles():
 def drop_directions():
     global selected_circle
     global selected_direction
+    global elapsed
 
     # Define the directions images
     directions_images = ["arrowup.png", "arrowdown.png", "arrowleft.png", "arrowright.png"]
@@ -150,9 +153,13 @@ def drop_directions():
         # Move the directions down
         DIRECTION_Y += DIRECTION_SPEED
 
-        # Draw the circles
+        current = time.time()
+        elapsed = current - start
+        
         screen.blit(background, (0, 0))
         draw_circles()
+        draw_score()
+        draw_time_left(round(60-elapsed, 1))
 
         # Draw the directions
         for i in range(len(directions)):
@@ -181,20 +188,31 @@ def check():
                 if joysticks[i].read_x() > 0.1:
                     score += 1
 
+def draw_score():
+    score_text = font.render(f"Score: {score}", True, BLUE)
+    screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 400))
+    pygame.display.update()
+
+def draw_time_left(time_left):
+    time_left_text = font.render(f"Time Left: {time_left}", True, BLUE)
+    screen.blit(time_left_text, (WINDOW_WIDTH // 2 - time_left_text.get_width() // 2, 450))
+    pygame.display.update()
+
 draw_circles()
 
-score = 0
+start = time.time()
 
 # Set up the game loop
 running = True
 while running:
+
     # --- Event Processing ---
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
     drop_directions()
-    
+
     # check if selected circle joystick is in the right direction
     num = selected_circle[0]
 
@@ -205,8 +223,39 @@ while running:
     # Update the screen
     pygame.display.flip()
 
+    if elapsed > 5:
+        screen.blit(background, (0, 0))
+        end_text = font_number.render("Game Over!", True, BLUE)
+        end_score = font.render(f"Score: {score}", True, BLUE)
+        screen.blit(end_text, (WINDOW_WIDTH // 2 - end_text.get_width() // 2, WINDOW_HEIGHT // 2 - end_text.get_height() // 2 - 100))
+        screen.blit(end_score, (WINDOW_WIDTH // 2 - end_score.get_width() // 2, WINDOW_HEIGHT // 2 - end_score.get_height() // 2 + 100))
+        pygame.display.update()
+        pygame.time.wait(4000)
+        running = False
+
     # --- Limit to 60 frames per second ---
     clock.tick(60)
+
+def update_score(station_number, current_score):
+    # Validate the input station_number
+    if station_number not in [1, 2, 3]:
+        print("Invalid station number. Station number must be 1, 2, or 3.")
+        return
+
+    # Read the current scores from the file
+    with open("highscores.txt", "r") as f:
+        scores = f.readlines()
+    
+    # Update the score for the specified station if the current_score is greater
+    station_score = int(scores[station_number - 1].split(":")[1])
+    if current_score > station_score:
+        scores[station_number - 1] = f"Station {station_number}: {current_score}\n"
+        
+        # Write the updated scores to the file
+        with open("highscores.txt", "w") as f:
+            f.writelines(scores)
+
+update_score(1, score)
 
 # Close the window and quit.
 pygame.quit()
