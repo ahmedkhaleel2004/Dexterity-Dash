@@ -2,13 +2,13 @@ import pygame
 import random
 import sys
 import time
-# from joystick_library import Joystick
+from joystick_library import Joystick
 
-# joystick1 = Joystick("4B",1,0)
-# joystick2 = Joystick("4B",2,3)
-# joystick3 = Joystick("48",3,2)
-# joystick4 = Joystick("49",1,0)
-# joystick5 = Joystick("49",2,3)
+joystick1 = Joystick("4B",1,0)
+joystick2 = Joystick("4B",2,3)
+joystick3 = Joystick("48",3,2)
+joystick4 = Joystick("49",1,0)
+joystick5 = Joystick("49",2,3)
 
 # Define colors
 WHITE = (255, 255, 255)
