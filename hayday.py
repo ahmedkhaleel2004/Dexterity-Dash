@@ -11,12 +11,18 @@ import random
 
 # MOVE THIS DOWN INTO GAME LOOP AFTER COLLISION
 
-f = open("highscores.txt", "r")
-highscores = []
+def update_highscores():
+    f = open("highscores.txt", "r")
+    highscores = []
 
-for line in f:
-    line = line.split()
-    highscores.append(int(line[-1]))
+    for line in f:
+        line = line.split()
+        highscores.append(int(line[-1]))
+
+    f.close()
+    return highscores
+
+highscores = update_highscores()
 
 # Initialize Pygame
 pygame.init()
@@ -69,24 +75,30 @@ direction = RIGHT
 station1_img = pygame.image.load('house1.png')
 station2_img = pygame.image.load('house2.png')
 station3_img = pygame.image.load('house3.png')
+exit_img = pygame.image.load('house4.png')
 
 # Scale the station images to the desired size
-station1_img = pygame.transform.scale(station1_img, (75, 75))
-station2_img = pygame.transform.scale(station2_img, (75, 75))
-station3_img = pygame.transform.scale(station3_img, (75, 75))
+station1_img = pygame.transform.scale(station1_img, (100, 100))
+station2_img = pygame.transform.scale(station2_img, (100, 100))
+station3_img = pygame.transform.scale(station3_img, (100, 100))
+exit_img = pygame.transform.scale(exit_img, (100, 100))
 
-# Define station rectangles to be spawned at random locations
+# Define station rectangles to be spawned at set locations
 station1_rect = station1_img.get_rect()
-station1_rect.x = random.randint(0, WINDOW_WIDTH - station1_rect.width)
-station1_rect.y = random.randint(0, WINDOW_HEIGHT - station1_rect.height)
+station1_rect.x = 300
+station1_rect.y = 100
 
 station2_rect = station2_img.get_rect()
-station2_rect.x = random.randint(0, WINDOW_WIDTH - station2_rect.width)
-station2_rect.y = random.randint(0, WINDOW_HEIGHT - station2_rect.height)
+station2_rect.x = 800
+station2_rect.y = 100
 
 station3_rect = station3_img.get_rect()
-station3_rect.x = random.randint(0, WINDOW_WIDTH - station3_rect.width)
-station3_rect.y = random.randint(0, WINDOW_HEIGHT - station3_rect.height)
+station3_rect.x = 570
+station3_rect.y = 550
+
+exit_rect = exit_img.get_rect()
+exit_rect.x = WINDOW_WIDTH - exit_img.get_width()
+exit_rect.y = WINDOW_HEIGHT - exit_img.get_height()
 
 # Define station actions
 station1_action = "station1.py"
@@ -137,6 +149,10 @@ text_header = header_font.render(f"Highscores:", True, blue)
 text_st1 = text_font.render(f"Station 1: {highscores[0]}", True, blue)
 text_st2 = text_font.render(f"Station 2: {highscores[1]}", True, blue)
 text_st3 = text_font.render(f"Station 3: {highscores[2]}", True, blue)
+text_station1 = text_font.render(f"Station 1", True, blue)
+text_station2 = text_font.render(f"Station 2", True, blue)
+text_station3 = text_font.render(f"Station 3", True, blue)
+text_exit = text_font.render(f"Exit", True, red)
 
 while True:
     # Handle events
@@ -186,6 +202,7 @@ while True:
         pygame.mixer.music.unpause()
         box_x = WINDOW_WIDTH // 2
         box_y = WINDOW_HEIGHT // 2
+        highscores = update_highscores()
     elif station2_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
         # Show prompt for station 2
         pygame.mixer.music.pause()
@@ -194,6 +211,7 @@ while True:
         pygame.mixer.music.unpause()
         box_x = WINDOW_WIDTH // 2
         box_y = WINDOW_HEIGHT // 2
+        highscores = update_highscores()
     elif station3_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
         # Show prompt for station 3
         pygame.mixer.music.pause()
@@ -202,19 +220,31 @@ while True:
         pygame.mixer.music.unpause()
         box_x = WINDOW_WIDTH // 2
         box_y = WINDOW_HEIGHT // 2
+        highscores = update_highscores()
+    elif exit_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
+        # Show prompt for exit
+        pygame.mixer.music.pause()
+        print("You have reached the exit!")
+        pygame.quit()
+        sys.exit()
     # Draw objects
     screen.blit(background, (0, 0))
     screen.blit(station1_img, (station1_rect.x, station1_rect.y))
     screen.blit(station2_img, (station2_rect.x, station2_rect.y))
     screen.blit(station3_img, (station3_rect.x, station3_rect.y))
+    screen.blit(exit_img, (exit_rect.x, exit_rect.y))
     if direction == LEFT:
         screen.blit(inverted_box_img, (box_x, box_y))
     else:
         screen.blit(box_img, (box_x, box_y))
-    screen.blit(text_header, (WINDOW_WIDTH-text_header.get_width(), 0))
-    screen.blit(text_st1, (WINDOW_WIDTH-text_st1.get_width(), text_header.get_height()))
-    screen.blit(text_st2, (WINDOW_WIDTH-text_st2.get_width(), text_st1.get_height()+text_header.get_height()))
-    screen.blit(text_st3, (WINDOW_WIDTH-text_st3.get_width(), text_st2.get_height()+text_st1.get_height()+text_header.get_height()))
+    screen.blit(text_header, (WINDOW_WIDTH-text_header.get_width()-50, 0))
+    screen.blit(text_st1, (WINDOW_WIDTH-text_st1.get_width()-50, text_header.get_height()))
+    screen.blit(text_st2, (WINDOW_WIDTH-text_st2.get_width()-50, text_st1.get_height()+text_header.get_height()))
+    screen.blit(text_st3, (WINDOW_WIDTH-text_st3.get_width()-50, text_st2.get_height()+text_st1.get_height()+text_header.get_height()))
+    screen.blit(text_exit, (exit_rect.x+15, exit_rect.y-text_exit.get_height()))
+    screen.blit(text_station1, (station1_rect.x-15, station1_rect.y-text_station1.get_height()))
+    screen.blit(text_station2, (station2_rect.x-15, station2_rect.y-text_station2.get_height()))
+    screen.blit(text_station3, (station3_rect.x-15, station3_rect.y-text_station3.get_height()))
     
     # Update display and tick clock
     pygame.display.update()
