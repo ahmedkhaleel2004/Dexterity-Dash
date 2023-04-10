@@ -1,138 +1,260 @@
+# Houses bigger, fixed locations, titles for stations, exit house
+# tracking: time limit, use different joysticks, switch fruits
+# original collecting game: collecting in certain time
+# pattern game: arrows move down, check collision and joystick pos, 3 fingers, increase speed after certain score
+
 import pygame
+import sys
+import os
+import subprocess
 import random
+from joystick_library import *
 
-from joystick_library import Joystick
-import time
+joystick1 = Joystick("4B",1,0)
+joystick2 = Joystick("4B",2,3)
+joystick3 = Joystick("48",3,2)
+joystick4 = Joystick("49",1,0)
+joystick5 = Joystick("49",2,3)
 
-# Syntax: Joystick(ADC_address: str, pin_x: int, pin_y: int)
-# joystick.read_y() / read_x() -> rolling avg and scaled value
-# If it works it works...
-joystick1 = Joystick("48",0,1)
-joystick2 = Joystick("48",3,2)
-joystick3 = Joystick("49",1,0)
-#joystick4
-joystick5 = Joystick("4B",1,0)
+# MOVE THIS DOWN INTO GAME LOOP AFTER COLLISION
+
+def update_highscores():
+    f = open("highscores.txt", "r")
+    highscores = []
+
+    for line in f:
+        line = line.split()
+        highscores.append(int(line[-1]))
+
+    f.close()
+    return highscores
+
+highscores = update_highscores()
+
 
 # Initialize Pygame
 pygame.init()
 
-# Set up the screen
-screen_width = 1280
-screen_height = 720
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Dexterity Dash")
+# Set window dimensions
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 1280
 
-# Set up the colors
-white = (255, 255, 255)
+# Set colors
 black = (0, 0, 0)
+white = (255, 255, 255)
+green = (0, 255, 0)
 red = (255, 0, 0)
+blue = (0, 0, 255)
 
-# Set up the dot
-dot_size = 20
-dot_x = screen_width // 2 - dot_size // 2
-dot_y = screen_height // 2 - dot_size // 2
-dot_speed = 2
-dot_color = white
-dot_vel_x = 0
-dot_vel_y = 0
+# Create window
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
-# Set up the target
-target_size = 40
-target_x = random.randint(0, screen_width - target_size)
-target_y = random.randint(0, screen_height - target_size)
-target_color = red
+# Set caption
+pygame.display.set_caption("Dexterity-Dash")
 
-# Set up the clock
+# Set clock
 clock = pygame.time.Clock()
 
-# Set up the title screen loop
-title_active = True
-while title_active:
-        # Handle events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                title_active = False
-                quit()
-    
-        # Handle user input
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            title_active = False
-    
-        # Draw the title
-        screen.fill(black)
-        bigfont = pygame.font.SysFont("impact", 100)
-        smallfont = pygame.font.SysFont("impact", 50)
-        text1 = bigfont.render("Dexterity Dash", 1, white)
-        text2 = smallfont.render("Press Space to Start", 1, red)
-        screen.blit(text1, (screen_width // 2 - text1.get_width() // 2, screen_height // 2 - text1.get_height() // 2 - 100))
-        screen.blit(text2, (screen_width // 2 - text2.get_width() // 2, screen_height // 2 - text2.get_height() // 2 + 100))
-    
-        # Update the screen
-        pygame.display.update()
-    
-        # Set the frame rate
-        clock.tick(60)
+# Set box dimensions
+BOX_WIDTH = 50
+BOX_HEIGHT = 50
 
-# Set up the game loop
-score = 0
-game_active = True
-while game_active:
-    
+box_img = pygame.image.load('player.png')
+box_img = pygame.transform.scale(box_img, (BOX_WIDTH, BOX_HEIGHT))
+inverted_box_img = pygame.transform.flip(box_img, True, False)
+
+# Set box position
+box_x = WINDOW_WIDTH // 2
+box_y = WINDOW_HEIGHT // 2
+
+# Set box speed
+box_speed = 1
+
+# Set direction constants
+LEFT = 'left'
+RIGHT = 'right'
+UP = 'up'
+DOWN = 'down'
+
+# Set initial direction
+direction = RIGHT
+
+# Load station images
+station1_img = pygame.image.load('house1.png')
+station2_img = pygame.image.load('house2.png')
+station3_img = pygame.image.load('house3.png')
+exit_img = pygame.image.load('house4.png')
+
+# Scale the station images to the desired size
+station1_img = pygame.transform.scale(station1_img, (100, 100))
+station2_img = pygame.transform.scale(station2_img, (100, 100))
+station3_img = pygame.transform.scale(station3_img, (100, 100))
+exit_img = pygame.transform.scale(exit_img, (100, 100))
+
+# Define station rectangles to be spawned at set locations
+station1_rect = station1_img.get_rect()
+station1_rect.x = 300
+station1_rect.y = 100
+
+station2_rect = station2_img.get_rect()
+station2_rect.x = 800
+station2_rect.y = 100
+
+station3_rect = station3_img.get_rect()
+station3_rect.x = 570
+station3_rect.y = 750
+
+exit_rect = exit_img.get_rect()
+exit_rect.x = WINDOW_WIDTH - exit_img.get_width()
+exit_rect.y = WINDOW_HEIGHT - exit_img.get_height()
+
+# Define station actions
+station1_action = "station1.py"
+station2_action = "station2.py"
+station3_action = "station3.py"
+
+# Create a font object
+title_font = pygame.font.Font('font.otf',140)
+header_font = pygame.font.Font('font.otf', 48)
+text_font = pygame.font.Font("font.otf", 36)
+
+# Load splash screen image
+splash_screen = pygame.image.load('Background.PNG')
+splash_text = title_font.render("Dexterity Dash", True, blue)
+
+
+# Scale the splash screen image to fit the window size
+splash_screen = pygame.transform.scale(splash_screen, (WINDOW_WIDTH, WINDOW_HEIGHT))
+
+
+# Display splash screen
+screen.blit(splash_screen, (0, 0))
+screen.blit(splash_text, (230, 500))
+pygame.display.flip()
+
+# Wait for 2 seconds
+pygame.time.wait(4000)
+
+# Load background image
+background = pygame.image.load('Best.PNG')
+
+# Scale the background image to fit the window size
+background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
+
+# Display background image
+screen.blit(background, (0, 0))
+pygame.display.flip()
+
+box_vel_x = 0
+box_vel_y = 0
+
+
+
+# Render the text onto a surface
+
+text_header = header_font.render(f"Highscores:", True, blue)
+text_st1 = text_font.render(f"Mode 1: {highscores[0]}", True, blue)
+text_st2 = text_font.render(f"Mode 2: {highscores[1]}", True, blue)
+text_st3 = text_font.render(f"Mode 3: {highscores[2]}", True, blue)
+text_station1 = text_font.render(f"Mode 1: Pattern", True, blue)
+text_station2 = text_font.render(f"Mode 2: Collecting", True, blue)
+text_station3 = text_font.render(f"Mode 3: Tracking", True, blue)
+text_exit = text_font.render(f"Exit", True, red)
+
+a=1
+joysticks = [joystick1,joystick2,joystick3,joystick4,joystick5]
+while True:
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            game_active = False
+            pygame.quit()
+            sys.exit()
 
-    # Bro there is something seriously wrong with the way sensor_library was coded but this works with some x's and y's switched
-    y_inputs = joystick1.read_x(), joystick2.read_y(), joystick3.read_y(), joystick5.read_y()
-    x_inputs = joystick1.read_y(), joystick2.read_x(), joystick3.read_x(), joystick5.read_x()
+    # Handle user input and update velocity
+    if a ==1 or a==3 or a==4:
+        y_inputs = joysticks[a-1].read_x()
+        x_inputs = joysticks[a-1].read_y()
+
+        box_vel_y += x_inputs*-100
+        box_vel_x += y_inputs*100
+    elif a ==5:
+        y_inputs = joysticks[a-1].read_x()
+        x_inputs = joysticks[a-1].read_y()
+
+        box_vel_y += y_inputs*100
+        box_vel_x += x_inputs*-100
+    else:
+        a = 1
+
+    box_vel_x *= 0.1
+    box_vel_y *= 0.1
+
+    # Update box position
+    box_x += box_vel_x
+    box_y += box_vel_y
+
+    if box_x < 0:
+        box_x = 0
+    elif box_x > WINDOW_WIDTH - BOX_WIDTH:
+        box_x = WINDOW_WIDTH - BOX_WIDTH
+    if box_y < 0:
+        box_y = 0
+    elif box_y > WINDOW_HEIGHT - BOX_HEIGHT:
+        box_y = WINDOW_HEIGHT - BOX_HEIGHT
+
+    # Check if box is overlapping with any station
+    if station1_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
+        # Show prompt for station 1
+        pygame.mixer.music.pause()
+        print("You have reached station 1!")
+        subprocess.call(["python", station1_action])
+        pygame.mixer.music.unpause()
+        box_x = WINDOW_WIDTH // 2
+        box_y = WINDOW_HEIGHT // 2
+        highscores = update_highscores()
+    elif station2_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
+        # Show prompt for station 2
+        pygame.mixer.music.pause()
+        print("You have reached station 2!")
+        subprocess.call(["python", station2_action])
+        pygame.mixer.music.unpause()
+        box_x = WINDOW_WIDTH // 2
+        box_y = WINDOW_HEIGHT // 2
+        highscores = update_highscores()
+    elif station3_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
+        # Show prompt for station 3
+        pygame.mixer.music.pause()
+        print("You have reached station 3!")
+        subprocess.call(["python", station3_action])
+        pygame.mixer.music.unpause()
+        box_x = WINDOW_WIDTH // 2
+        box_y = WINDOW_HEIGHT // 2
+        highscores = update_highscores()
+    elif exit_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
+        # Show prompt for exit6
+        pygame.mixer.music.pause()
+        print("You have reached the exit!")
+        pygame.quit()
+        sys.exit()
+    # Draw objects
+    screen.blit(background, (0, 0))
+    screen.blit(station1_img, (station1_rect.x, station1_rect.y))
+    screen.blit(station2_img, (station2_rect.x, station2_rect.y))
+    screen.blit(station3_img, (station3_rect.x, station3_rect.y))
+    screen.blit(exit_img, (exit_rect.x, exit_rect.y))
+    if box_vel_x < 0:
+        screen.blit(inverted_box_img, (box_x, box_y))
+    else:
+        screen.blit(box_img, (box_x, box_y))
+    screen.blit(text_header, (WINDOW_WIDTH-text_header.get_width()-30, 0))
+    screen.blit(text_st1, (WINDOW_WIDTH-text_st1.get_width()-30, text_header.get_height()))
+    screen.blit(text_st2, (WINDOW_WIDTH-text_st2.get_width()-30, text_st1.get_height()+text_header.get_height()))
+    screen.blit(text_st3, (WINDOW_WIDTH-text_st3.get_width()-30, text_st2.get_height()+text_st1.get_height()+text_header.get_height()))
+    screen.blit(text_exit, (exit_rect.x+15, exit_rect.y-text_exit.get_height()))
+    screen.blit(text_station1, (station1_rect.x-45, station1_rect.y-text_station1.get_height()))
+    screen.blit(text_station2, (station2_rect.x-45, station2_rect.y-text_station2.get_height()))
+    screen.blit(text_station3, (station3_rect.x-45, station3_rect.y-text_station3.get_height()))
     
-    # Move dot (0.12 is there for correction)
-    dot_vel_y += (sum(y_inputs)+0.12)*-100
-    dot_vel_x += (sum(x_inputs)-0.12)*100
-
-    # Add friction
-    dot_vel_x *= 0.1
-    dot_vel_y *= 0.1
-
-    # Update the crosshair position
-    dot_x += dot_vel_x
-    dot_y += dot_vel_y
-
-    # Set boundaries for the dot
-    if dot_x <= 0:
-        dot_x = 0
-    if dot_x >= screen_width - dot_size:
-        dot_x = screen_width - dot_size
-    if dot_y <= 0:
-        dot_y = 0
-    if dot_y >= screen_height - dot_size:
-        dot_y = screen_height - dot_size
-
-    # Update the dot
-    dot_rect = pygame.Rect(dot_x, dot_y, dot_size, dot_size)
-
-    # Update the target
-    target_rect = pygame.Rect(target_x, target_y, target_size, target_size)
-
-    # Check for collision between the dot and the target
-    if dot_rect.colliderect(target_rect):
-        target_x = random.randint(0, screen_width - target_size)
-        target_y = random.randint(0, screen_height - target_size)
-        score += 1
-
-    # Draw the dot and the target
-    screen.fill(black)
-    pygame.draw.rect(screen, dot_color, dot_rect)
-    pygame.draw.rect(screen, target_color, target_rect)
-
-    # Update the screen
+    # Update display and tick clock
     pygame.display.update()
-
-    # Set the frame rate
     clock.tick(60)
-
-# Quit Pygame
-pygame.quit()
-print("Your final score was", score)
