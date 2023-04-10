@@ -2,13 +2,13 @@ import pygame
 import random
 import sys
 import time
-from joystick_library import Joystick
+# from joystick_library import Joystick
 
-joystick1 = Joystick("4B",1,0)
-joystick2 = Joystick("4B",2,3)
-joystick3 = Joystick("48",3,2)
-joystick4 = Joystick("49",1,0)
-joystick5 = Joystick("49",2,3)
+# joystick1 = Joystick("4B",1,0)
+# joystick2 = Joystick("4B",2,3)
+# joystick3 = Joystick("48",3,2)
+# joystick4 = Joystick("49",1,0)
+# joystick5 = Joystick("49",2,3)
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -41,14 +41,14 @@ background = pygame.image.load('background.png')
 # Scale the background image to fit the window size
 background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
-# Initialize Pygame's mixer module
-pygame.mixer.init()
+# # Initialize Pygame's mixer module
+# pygame.mixer.init()
 
-# Load the music file
-pygame.mixer.music.load("station1.mp3")
+# # Load the music file
+# pygame.mixer.music.load("station1.mp3")
 
-# Start playing the music on a loop
-pygame.mixer.music.play(-1)
+# # Start playing the music on a loop
+# pygame.mixer.music.play(-1)
 
 screen.blit(background, (0, 0))
 
