@@ -88,13 +88,13 @@ def drop_directions():
     directions_images = ["arrowup.png", "arrowdown.png", "arrowleft.png", "arrowright.png"]
 
     # Randomly select 3 directions
-    selected_directions = random.sample(directions_images, 3)
+    selected_directions = random.sample(directions_images, 1)
 
     # Define the y-coordinate of the directions
     DIRECTION_Y = 0
 
     # Define the speed of the directions
-    DIRECTION_SPEED = 5
+    DIRECTION_SPEED = 2
 
     # Define the radius of the circles
     CIRCLE_RADIUS = 50
@@ -105,10 +105,9 @@ def drop_directions():
     # Calculate the x-coordinate of the leftmost circle
     circles_start_x = WINDOW_WIDTH // 2 - CIRCLE_RADIUS * 4 - CIRCLE_SPACING * 3
     # Define the y-coordinate of the circles
-    CIRCLE_Y = 300
 
     # Randomly select 3 circles
-    selected_circles = random.sample(range(5), 3)
+    selected_circles = random.sample(range(5), 1)
 
     # Load the directions images
     directions = []
@@ -119,11 +118,13 @@ def drop_directions():
     for i in range(len(directions)):
         directions[i] = pygame.transform.scale(directions[i], (75, 75))
 
+    CIRCLE_Y = 300 - directions[0].get_height() // 2
+
     # Set the x-coordinate of the directions to the center of the selected circles
     direction_x = []
     for circle_index in selected_circles:
         circle_x = circles_start_x + circle_index * (CIRCLE_RADIUS * 2 + CIRCLE_SPACING*2)
-        direction_x.append(circle_x + CIRCLE_RADIUS - directions[0].get_width() // 2)
+        direction_x.append(circle_x - directions[0].get_width() // 2)
 
     # Start dropping the directions
     while DIRECTION_Y <= CIRCLE_Y:
@@ -140,7 +141,6 @@ def drop_directions():
         # Draw the circles
         screen.blit(background, (0, 0))
         draw_circles()
-        
 
         # Draw the directions
         for i in range(len(directions)):
@@ -163,13 +163,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # --- Game logic ---
-    # Get the state of the arrow keys
-    keys = pygame.key.get_pressed()
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            sys.exit()
+    drop_directions()
 
     # Update the screen
     pygame.display.flip()
