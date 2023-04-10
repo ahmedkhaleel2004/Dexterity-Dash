@@ -34,10 +34,6 @@ class Target(pygame.sprite.Sprite):
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
 
-    def update(self):
-        self.rect.x += random.randint(-5, 5)
-        self.rect.y += random.randint(-5, 5)
-
         # Keep the target on the screen
         if self.rect.left < 0:
             self.rect.left = 0
@@ -91,9 +87,6 @@ while not done:
 
         # Increase the score
         score += 1
-
-    # Update the target sprite
-    target_sprite.update()
 
     # --- Draw the screen ---
     # Fill the background
