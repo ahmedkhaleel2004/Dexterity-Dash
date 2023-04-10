@@ -2,6 +2,13 @@ import pygame
 import random
 import sys
 import time
+from joystick_library import Joystick
+
+joystick1 = Joystick("4B",1,0)
+joystick2 = Joystick("4B",2,3)
+joystick3 = Joystick("48",3,2)
+joystick4 = Joystick("49",1,0)
+joystick5 = Joystick("49",2,3)
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -45,6 +52,9 @@ pygame.mixer.music.play(-1)
 
 screen.blit(background, (0, 0))
 
+a = 3
+joysticks = [joystick1, joystick2, joystick3, joystick4, joystick5]
+
 start_text = font.render("Game Starting in...", True, BLUE)
 three_text = font_number.render("3", True, BLUE)
 two_text = font_number.render("2", True, BLUE)
@@ -84,11 +94,14 @@ def draw_circles():
         pygame.draw.circle(screen, BLACK, (circle_x, CIRCLE_Y), CIRCLE_RADIUS, 5)
 
 def drop_directions():
+    global selected_circle
+    global selected_direction
+
     # Define the directions images
     directions_images = ["arrowup.png", "arrowdown.png", "arrowleft.png", "arrowright.png"]
 
     # Randomly select 3 directions
-    selected_directions = random.sample(directions_images, 1)
+    selected_direction = random.sample(directions_images, 1)
 
     # Define the y-coordinate of the directions
     DIRECTION_Y = 0
@@ -107,11 +120,11 @@ def drop_directions():
     # Define the y-coordinate of the circles
 
     # Randomly select 3 circles
-    selected_circles = random.sample(range(5), 1)
+    selected_circle = random.sample(range(5), 1)
 
     # Load the directions images
     directions = []
-    for direction in selected_directions:
+    for direction in selected_direction:
         directions.append(pygame.image.load(direction))
 
     # Scale the directions images to fit the circle size
@@ -122,7 +135,7 @@ def drop_directions():
 
     # Set the x-coordinate of the directions to the center of the selected circles
     direction_x = []
-    for circle_index in selected_circles:
+    for circle_index in selected_circle:
         circle_x = circles_start_x + circle_index * (CIRCLE_RADIUS * 2 + CIRCLE_SPACING*2)
         direction_x.append(circle_x - directions[0].get_width() // 2)
 
@@ -153,7 +166,8 @@ def drop_directions():
         clock.tick(60)
 
 draw_circles()
-drop_directions()
+
+score = 0
 
 # Set up the game loop
 running = True
@@ -164,12 +178,32 @@ while running:
             running = False
 
     drop_directions()
+    
+    # check if selected circle joystick is in the right direction
+    num = selected_circle[0]
+
+    for i in range(5):
+        if i == num:
+            if selected_direction == ["arrowup.png"]:
+                if joysticks[i].read_y() > 0.5:
+                    score += 1
+            elif selected_direction == ["arrowdown.png"]:
+                if joysticks[i].read_y() < -0.5:
+                    score += 1
+            elif selected_direction == ["arrowleft.png"]:
+                if joysticks[i].read_x() < -0.5:
+                    score += 1
+            elif selected_direction == ["arrowright.png"]:
+                if joysticks[i].read_x() > 0.5:
+                    score += 1
 
     # Update the screen
     pygame.display.flip()
 
     # --- Limit to 60 frames per second ---
     clock.tick(60)
+
+print("your score was", score)
 
 # Close the window and quit.
 pygame.quit()
