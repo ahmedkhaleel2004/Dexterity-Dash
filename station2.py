@@ -1,6 +1,14 @@
+
 import pygame
 import random
+import time
+from joystick_library import *
 
+joystick1 = Joystick("48",0,1)
+joystick2 = Joystick("48",3,2)
+joystick3 = Joystick("49",1,0)
+joystick4 = Joystick("49",2,3)
+joystick5 = Joystick("4B",1,0)
 pygame.init()
 
 # Define the screen dimensions
@@ -26,7 +34,9 @@ clock = pygame.time.Clock()
 
 # Define the game variables
 score = 0
-time_left = 3000
+time_left = 800
+background_image = pygame.image.load("background.png").convert()
+
 fruits = ["apple", "tree", "rose"]
 fruit_images = {
     "apple": pygame.image.load("apple.png"),
@@ -43,10 +53,11 @@ fruit_positions = {
     "tree": [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2],
     "rose": [SCREEN_WIDTH // 4 * 3, SCREEN_HEIGHT // 2]
 }
+speed=1.5
 fruit_velocities = {
-    "apple": [random.uniform(-3, 3), random.uniform(-3, 3)],
-    "tree": [random.uniform(-3, 3), random.uniform(-3, 3)],
-    "rose": [random.uniform(-3, 3), random.uniform(-3, 3)]
+    "apple": [random.uniform(-speed, speed), random.uniform(-speed, speed)],
+    "tree": [random.uniform(-speed, speed), random.uniform(-speed, speed)],
+    "rose": [random.uniform(-speed, speed), random.uniform(-speed, speed)]
 }
 
 # Define the functions
@@ -79,6 +90,18 @@ def random_fruit():
 
 # Create the black square
 shovel_rect = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 20, 20)
+high_score=0
+# Open the high score file in read-only mode
+
+with open('highscores.txt', 'r') as file:
+    # Read the high score value from the file
+    high_score = int(file.read())
+
+print("No current high score")
+
+
+# Print the high score value
+print("The current high score is:", high_score)
 
 # Start the game loop
 running = True
@@ -90,6 +113,10 @@ while running:
 
     # Clear the screen
     screen.fill(WHITE)
+
+    #Draw the background
+    screen.blit(background_image, [0, 0])
+
 
     # Draw the fruits
     for fruit in fruits:
@@ -107,13 +134,13 @@ while running:
     # Move the black square with arrow keys
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
-        shovel_rect.move_ip(-5, 0)
+        shovel_rect.move_ip(-joystick1.read_x(), 0)
     if keys[pygame.K_RIGHT]:
-        shovel_rect.move_ip(5, 0)
+        shovel_rect.move_ip(joystick1.read_x(), 0)
     if keys[pygame.K_UP]:
-        shovel_rect.move_ip(0, -5)
+        shovel_rect.move_ip(0, -joystick1.read_y())
     if keys[pygame.K_DOWN]:
-        shovel_rect.move_ip(0, 5)
+        shovel_rect.move_ip(0, joystick1.read_y())
 
     # Check for collisions with the black square
     for fruit in fruits:
@@ -121,8 +148,6 @@ while running:
             score += 1
             fruits.remove(fruit)
             fruits.append(random_fruit())
-            print("Collision detecterd, random fruit spawned")
-
     # Check if time is up
     if time_left <= 0:
         running = False
@@ -144,6 +169,16 @@ while running:
 screen.fill(WHITE)  
 draw_text("Game Over", BLACK, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
 draw_text(f"Final Score: {score}", BLACK, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+
+if score > high_score:
+    with open('highscores.txt', 'w') as file:
+        high_score = score
+        file.write(str(high_score))
+        print("Updating highscore")
+else:
+    draw_text(f"The current high score is, {high_score}", BLACK, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
+
+
 pygame.display.update()
 
 # Wait for a while before quitting
