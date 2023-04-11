@@ -145,6 +145,7 @@ background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 screen.blit(background, (0, 0))
 pygame.display.flip()
 
+#Set initial box velocities
 box_vel_x = 0
 box_vel_y = 0
 
@@ -161,8 +162,11 @@ text_station2 = text_font.render(f"Mode 2: Collecting", True, blue)
 text_station3 = text_font.render(f"Mode 3: Tracking", True, blue)
 text_exit = text_font.render(f"Exit", True, red)
 
+#Setting initial joystick number and intializing all josticks
 a=1
 joysticks = [joystick1,joystick2,joystick3,joystick4,joystick5]
+
+
 while True:
     # Handle events
     for event in pygame.event.get():
@@ -231,8 +235,7 @@ while True:
         box_y = WINDOW_HEIGHT // 2
         highscores = update_highscores()
     elif exit_rect.colliderect(pygame.Rect(box_x, box_y, BOX_WIDTH, BOX_HEIGHT)):
-        # Show prompt for exit6
-        pygame.mixer.music.pause()
+        # Show prompt for exit
         print("You have reached the exit!")
         pygame.quit()
         sys.exit()
