@@ -132,7 +132,7 @@ while running:
     #update fruit positions
     update_fruit_positions()
 
-    
+    #Logic for joysticks in order to work around brocken joystick
     if a ==1 or a==3 or a==4:
         y_inputs = joysticks[a-1].read_x()
         x_inputs = joysticks[a-1].read_y()
@@ -157,17 +157,7 @@ while running:
     # Update the crosshair position
     dot_x += dot_vel_x
     dot_y += dot_vel_y
-
-   # Set boundaries for the dot
-    #if dot_x <= 0:
-        #dot_x = 0
-    #if dot_x >= SCREEN_WIDTH - dot_size:
-      #  dot_x = SCREEN_WIDTH - dot_size
-    #if dot_y <= 0:
-     #   dot_y = 0
-    #if dot_y >= SCREEN_HEIGHT - dot_size:
-     #   dot_y = SCREEN_HEIGHT - dot_size
-
+    
     # Check for collisions with fruits
     for fruit in fruits:
         if fruit_rects[fruit].colliderect(pygame.Rect(dot_x, dot_y, dot_size, dot_size)):
@@ -198,15 +188,6 @@ while running:
     # Update the screen
     pygame.display.flip()
 
-    # Set the frameif dot_x <= 0:
-    #dot_x = 0
-    #if dot_x >= SCREEN_WIDTH - dot_size:
-      #  dot_x = SCREEN_WIDTH - dot_size
-    #if dot_y <= 0:
-      #  dot_y = 0
-    #if dot_y >= SCREEN_HEIGHT - dot_size:
-      #  dot_y = SCREEN_HEIGHT - dot_size
-
     # Check for collisions with fruits
     for fruit in fruits:
         if fruit_rects[fruit].colliderect(pygame.Rect(dot_x, dot_y, dot_size, dot_size)):
@@ -223,12 +204,6 @@ while running:
             dot_vel_x = 0
             dot_vel_y = 0
     clock.tick(60)
-
-    # switch between joysticks
-    #a+=1
-    #if a > 5:
-     #   a = 1
-
 
 
 # Game over
