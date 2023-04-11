@@ -42,19 +42,12 @@ background = pygame.image.load('Selection.PNG')
 # Scale the background image to fit the window size
 background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
-# # Initialize Pygame's mixer module
-# pygame.mixer.init()
-
-# # Load the music file
-# pygame.mixer.music.load("station1.mp3")
-
-# # Start playing the music on a loop
-# pygame.mixer.music.play(-1)
-
 screen.blit(background, (0, 0))
 
+#initialize joystick list
 joysticks = [joystick1, joystick2, joystick3, joystick4, joystick5]
 
+# Creating main menu animation
 start_text = font.render("Game Starting in...", True, BLUE)
 three_text = font_number.render("3", True, BLUE)
 two_text = font_number.render("2", True, BLUE)
@@ -75,7 +68,9 @@ pygame.display.flip()
 time.sleep(1)
 screen.blit(background, (0, 0))
 
+#Initialize score
 score = 0
+
 
 def draw_circles():
     # Define the radius of the circles
@@ -150,7 +145,6 @@ def drop_directions():
                 pygame.quit()
                 sys.exit()
 
-        # --- Game logic ---
         # Move the directions down
         DIRECTION_Y += DIRECTION_SPEED
 
@@ -169,7 +163,6 @@ def drop_directions():
         # Update the screen
         pygame.display.flip()
 
-        # --- Limit to 60 frames per second ---
         clock.tick(60)
 
 def check():
@@ -207,7 +200,6 @@ start = time.time()
 running = True
 while running:
 
-    # --- Event Processing ---
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -234,10 +226,8 @@ while running:
         pygame.time.wait(4000)
         running = False
 
-    # --- Limit to 60 frames per second ---
     clock.tick(60)
 
 update_score(1, score)
 
-# Close the window and quit.
 pygame.quit()
