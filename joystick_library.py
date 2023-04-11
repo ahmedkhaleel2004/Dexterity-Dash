@@ -98,16 +98,16 @@ class joystick0x4B(object):
         self.force_raw()
         self.scaled = self.force_raw() * scale / 255
         return self.scaled
-
+#Define rolling average function
 def rolling_average(size, data):
     data = data[len(data)-size:len(data)]
     average = sum(data)/size
     return average
-
+#Define scale function in order to get values between -2 and 2
 def scale(value, baseline):
     scaled_value = ((value-baseline)/baseline)*2
     return scaled_value
-
+#Initialize joystick class 
 class Joystick:
 
     def __init__(self, address, pin_x, pin_y):
@@ -115,7 +115,6 @@ class Joystick:
         self.LR = []
         self.SIZE = 8
         if address == "48":
-            # I have NO IDEA why the pins are reversed but it works
             self.x = joystick0x48(pin_y)
             self.y = joystick0x48(pin_x)
         elif address == "49":
@@ -133,20 +132,20 @@ class Joystick:
             self.LR.append(self.x.force_raw())
         self.BASELINE_Y = self.UD[-1]
         self.BASELINE_X = self.LR[-1]
-
+#Define function to clear excess values stored in arrays to prevent buildup over long runs
     def clear(self):
         if len(self.UD) >= self.SIZE*2:
             self.UD = self.UD[-1*(self.SIZE)-1:-1]
         if len(self.LR) >= self.SIZE*2:
             self.LR = self.LR[-1*(self.SIZE)-1:-1]
-
+#Define function to read y values of joystick input
     def read_y(self):
         self.clear()
         self.UD.append(self.y.force_raw())
         self.average_result_y = rolling_average(self.SIZE,self.UD)
         self.scaled_value_y = scale(self.average_result_y,self.BASELINE_Y)
         return round(self.scaled_value_y, 2)
-
+#Define function to read x values of joystick input
     def read_x(self):
         self.clear()
         self.LR.append(self.x.force_raw())
